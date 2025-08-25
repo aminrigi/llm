@@ -1,0 +1,72 @@
+@startuml UseCase
+
+actor DS
+actor Ops
+actor DA
+actor MA
+actor Orchestrator
+
+(Generate Forecast) as GF
+(Analyse IO) as AIO
+(DataAnalysis) as DAQ
+(Comms with customer) as CWC
+(Consume Forecasts) as CF
+(Route Queries) as RQ
+(Generate Final Response) as GFR
+
+DS --> GF
+DS --> AIO
+DA --> DAQ
+MA --> CWC
+Ops --> CF
+Orchestrator --> RQ
+Orchestrator --> GFR
+
+@enduml
+
+
+
+@startuml ActivityDiagram
+
+start
+
+:Ops sends query;
+:Orchestrator receives query;
+:Orchestrator sends query to DA;
+
+if (DA response satisfactory?) then (yes)
+    :Orchestrator generates final response;
+    :Orchestrator sends final response to Ops;
+else (no)
+    :Orchestrator sends query to MA;
+    if (MA response satisfactory?) then (yes)
+        :Orchestrator generates final response;
+        :Orchestrator sends final response to Ops;
+    else (no)
+        :Orchestrator sends query to DS;
+        :DS processes query;
+        :DS sends response to Orchestrator;
+        :Orchestrator generates final response;
+        :Orchestrator sends final response to Ops;
+    endif
+endif
+
+end
+
+@enduml
+
+
+@startuml ClassDiagram
+class QueryState {
+    query: str
+    DA_response: str
+    DA_response: dataframe
+    MA_response: str
+    DS_response: str
+    DS_response_data: dataframe
+    final_response: str
+    final_response_data: dataframe
+    current_stage: str
+}
+
+@enduml
